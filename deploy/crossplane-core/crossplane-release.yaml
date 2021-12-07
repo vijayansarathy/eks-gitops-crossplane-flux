@@ -7,7 +7,7 @@ spec:
   interval: 5m
   chart:
     spec:
-      chart: crossplane-chart
+      chart: stable
       version: '1.4.1'
       sourceRef:
         kind: HelmRepository
