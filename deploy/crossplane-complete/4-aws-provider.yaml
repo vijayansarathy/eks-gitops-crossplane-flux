@@ -3,9 +3,6 @@ apiVersion: pkg.crossplane.io/v1
 kind: Provider
 metadata:
   name: crossplane-provider-aws
-  annotations:
-    argocd.argoproj.io/sync-wave: "30"   
-    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true 
 spec:
   package: "public.ecr.aws/awsvijisarathy/crossplane-provider-aws:v0.17.0"
 
@@ -13,11 +10,7 @@ spec:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  generateName: after-provider
-  annotations:
-    argocd.argoproj.io/hook: Sync
-    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
-    argocd.argoproj.io/sync-wave: "40"
+  name: after-provider
 spec:
   template:
     spec:
