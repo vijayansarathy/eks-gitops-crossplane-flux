@@ -1,0 +1,14 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta1
+kind: GitRepository
+metadata:
+  name: crossplane-source
+  namespace: flux-system
+spec:
+  interval: 30s
+  ref:
+    branch: main
+  secretRef:
+    name: crossplane-source
+  url: ssh://git@github.com/vijayansarathy/eks-gitops-crossplane-flux.git
+
