@@ -12,7 +12,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: crossplane-repository
-        namespace: flux-system
+        namespace: crossplane-system
       interval: 1m
 
 
