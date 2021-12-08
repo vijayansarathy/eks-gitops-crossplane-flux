@@ -7,5 +7,6 @@ resources:
   - 4-aws-provider.yaml
   - 5-aws-providerconfig.yaml
   - 6-crossplane-eks-composition.yaml
+  - 7-eks-cluster-xr.yaml
 
 
