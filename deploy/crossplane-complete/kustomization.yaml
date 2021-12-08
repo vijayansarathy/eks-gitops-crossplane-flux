@@ -4,5 +4,6 @@ kind: Kustomization
 resources:
   - 2-sealed-secrets-controller.yaml
   - 3-aws-credentials-sealed.yaml
+  - 4-aws-provider.yaml
 
 
