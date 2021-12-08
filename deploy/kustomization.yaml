@@ -4,5 +4,4 @@ kind: Kustomization
 namespace: crossplane-system
 resources:
   - crossplane-core
-  - crossplane-complete
 
