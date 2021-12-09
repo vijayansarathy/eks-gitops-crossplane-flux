@@ -33,5 +33,5 @@ spec:
     name: amazon-eks-cluster
 
   writeConnectionSecretToRef:
-    namespace: eks
+    namespace: crossplane-system
     name: crossplane-addon-cluster-connection
