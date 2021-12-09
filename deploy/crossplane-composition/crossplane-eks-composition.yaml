@@ -9,17 +9,3 @@ spec:
   revisionActivationPolicy: Automatic
   revisionHistoryLimit: 0
   skipDependencyResolution: false
-
----
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: post-configuration
-spec:
-  template:
-    spec:
-      containers:
-        - name: page-down
-          image: alpine:latest
-          command: ["sleep", "20"]
-      restartPolicy: Never

@@ -2,10 +2,7 @@
 apiVersion: eks.sarathy.io/v1beta1
 kind: EKSCluster
 metadata:
-  name: crossplane-prod-cluster
-  annotations:
-    argocd.argoproj.io/sync-wave: "300"   
-    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true  
+  name: crossplane-addon-cluster
 spec:
   parameters:
     region: us-west-2
@@ -37,4 +34,4 @@ spec:
 
   writeConnectionSecretToRef:
     namespace: eks
-    name: crossplane-prod-cluster-connection
+    name: crossplane-addon-cluster-connection
