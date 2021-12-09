@@ -1,0 +1,32 @@
+#
+# In addition to reconciling the state of the cluster where the GitOps Toolkit is installed, Flux V2 is capable of reconciling the state of a remote cluster too.
+# When a Kustomization is configured with a 'kubeconfig' field, objects will be applied, health-checked, pruned, and deleted for the remote cluster specified in that KubeConfig.
+# The Secret defined in the 'kubeConfig.SecretRef' must exist in the same namespace as the Kustomization and provides the relevant KubeConfig data.
+# On every reconciliation, the KubeConfig bytes will be loaded from the 'value' or 'value.yaml' key of the secret’s data, and the secret can thus be regularly updated if cluster-access-tokens have to rotate due to expiration.
+# For reconciling the state of a remote cluster, you will have to create a ServiceAccount in the remote cluster with appropriate RBAC permissions.
+# Every ServiceAccount is associated with an authentication token found in the corresponding Secret within the same namespace.
+# The KubeConfig generated for the remote cluster should provide the ServiceAccount's authentication token.
+# Then, a Secret is created in the same namespace where the Kustomization resource is deployed on the cluster where Flux is installed.
+# https://fluxcd.io/docs/components/kustomize/kustomization/#remote-clusters--cluster-api
+#
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta1
+kind: Kustomization
+metadata:
+  name: crossplane-recommender
+  namespace: flux-system
+spec:
+  interval: 30s
+  path: ./deploy/crossplane-applications/recommender
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: crossplane-source
+  kubeConfig:
+    secretRef:
+      name: remote-kubeconfig    
+  healthChecks:
+  - kind: Deployment
+    name: recommender-app
+    namespace: java
+  validation: client
