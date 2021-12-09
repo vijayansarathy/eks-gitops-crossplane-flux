@@ -7,6 +7,15 @@ spec:
   package: "public.ecr.aws/awsvijisarathy/crossplane-provider-aws:v0.17.0"
 
 ---
+apiVersion: meta.pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: crossplane-provider-aws
+spec:
+  controller:
+    image: "public.ecr.aws/awsvijisarathy/crossplane-provider-aws:v0.17.0"  
+
+---
 apiVersion: batch/v1
 kind: Job
 metadata:
