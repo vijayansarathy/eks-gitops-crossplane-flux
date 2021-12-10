@@ -1,0 +1,25 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: prometheus-for-amp
+  namespace: monitoring
+spec:
+  releaseName: prometheus-for-amp
+  interval: 5m
+  chart:
+    spec:
+      chart: prometheus
+      version: '15.0.1'
+      sourceRef:
+        kind: HelmRepository
+        name: prometheus-community
+        namespace: monitoring
+      interval: 1m
+  #
+  # Loading the Helm chart values to be overridden from a ConfigMap
+  #
+  valuesFrom:
+  - kind: ConfigMap
+    name: prometheus-configmap
+
+

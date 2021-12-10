@@ -1,0 +1,26 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta1
+kind: Kustomization
+metadata:
+  name: application-prometheus
+  namespace: flux-system
+spec:
+  dependsOn:
+  - name: application-s3reader
+  interval: 30s
+  path: ./deploy/crossplane-applications/monitoring
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: crossplane-source
+  healthChecks:
+  - apiVersion: helm.toolkit.fluxcd.io/v2beta1
+    kind: HelmRelease
+    name: prometheus-for-amp
+    namespace: monitoring
+  - kind: Deployment
+    name: prometheus-for-amp
+    namespace: monitoring
+  validation: client
+  timeout: 2m
+
