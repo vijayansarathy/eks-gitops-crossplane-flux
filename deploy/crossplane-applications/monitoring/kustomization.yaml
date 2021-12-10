@@ -1,7 +1,7 @@
 ---
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-namespace: monitoring
+namespace: flux-system
 resources:
   - prometheus-repository.yaml
   - prometheus-release.yaml
@@ -13,6 +13,7 @@ resources:
 #
 configMapGenerator:
   - name: prometheus-configmap
+    namespace: monitoring
     files:
       - values.yaml=prometheus-values.yaml
 #
