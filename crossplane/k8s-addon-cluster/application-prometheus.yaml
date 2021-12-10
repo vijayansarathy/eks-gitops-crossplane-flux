@@ -12,10 +12,7 @@ spec:
   prune: true
   sourceRef:
     kind: GitRepository
-    name: crossplane-source
-  kubeConfig:
-    secretRef:
-      name: remote-kubeconfig       
+    name: crossplane-source     
   healthChecks:
   - apiVersion: helm.toolkit.fluxcd.io/v2beta1
     kind: HelmRelease
