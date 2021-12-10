@@ -2,8 +2,9 @@ apiVersion: helm.toolkit.fluxcd.io/v2beta1
 kind: HelmRelease
 metadata:
   name: prometheus-for-amp
-  namespace: monitoring
+  namespace: flux-system
 spec:
+  targetNamespace: monitoring
   releaseName: prometheus-for-amp
   interval: 5m
   kubeConfig:
@@ -15,7 +16,7 @@ spec:
       sourceRef:
         kind: HelmRepository
         name: prometheus-community
-        namespace: monitoring
+        namespace: flux-system
       interval: 1m
   valuesFrom:
   - kind: ConfigMap
