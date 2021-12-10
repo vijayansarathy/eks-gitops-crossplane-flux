@@ -13,14 +13,6 @@ spec:
   sourceRef:
     kind: GitRepository
     name: crossplane-source     
-  healthChecks:
-  - apiVersion: helm.toolkit.fluxcd.io/v2beta1
-    kind: HelmRelease
-    name: prometheus-for-amp
-    namespace: monitoring
-  - kind: Deployment
-    name: prometheus-for-amp-server
-    namespace: monitoring
   validation: client
   timeout: 2m
 
