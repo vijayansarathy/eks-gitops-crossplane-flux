@@ -4,7 +4,7 @@ metadata:
   name: prometheus-for-amp
   namespace: flux-system
 spec:
-  targetNamespace: monitoring
+  storageNamespace: monitoring
   releaseName: prometheus-for-amp
   interval: 5m
   kubeConfig:
