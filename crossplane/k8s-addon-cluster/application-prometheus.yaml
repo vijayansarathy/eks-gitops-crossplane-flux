@@ -19,7 +19,7 @@ spec:
     name: prometheus-for-amp
     namespace: monitoring
   - kind: Deployment
-    name: prometheus-for-amp
+    name: prometheus-for-amp-server
     namespace: monitoring
   validation: client
   timeout: 2m
