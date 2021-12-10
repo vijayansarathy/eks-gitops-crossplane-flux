@@ -1,0 +1,18 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta1
+kind: Kustomization
+metadata:
+  name: application-prometheus
+  namespace: flux-system
+spec:
+  dependsOn:
+  - name: application-s3reader
+  interval: 30s
+  path: ./deploy/crossplane-applications/monitoring
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: crossplane-source     
+  validation: client
+  timeout: 2m
+
