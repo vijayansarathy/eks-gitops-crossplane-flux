@@ -12,7 +12,7 @@ resources:
 #
 configMapGenerator:
   - name: prometheus-configmap
-    namespace: monitoring
+    namespace: flux-system
     files:
       - values.yaml=prometheus-values.yaml
 #
