@@ -12,7 +12,7 @@ spec:
   prune: true
   sourceRef:
     kind: GitRepository
-    name: crossplane-source
+    name: flux-system
   healthChecks:
   - kind: Deployment
     name: sealed-secrets-controller
