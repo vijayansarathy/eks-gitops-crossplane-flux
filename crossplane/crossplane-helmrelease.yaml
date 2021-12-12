@@ -10,7 +10,7 @@ spec:
   prune: true
   sourceRef:
     kind: GitRepository
-    name: crossplane-source
+    name: flux-system
   #
   # A Kustomization can contain a series of health checks used to determine the rollout status of the deployed workloads and the ready status of custom resources.
   # A health check entry can reference either one of the Kubernetes builtin types or GitOps Toolkit types such as HelmRelease, HelmRepository, GitRepository, etc.
