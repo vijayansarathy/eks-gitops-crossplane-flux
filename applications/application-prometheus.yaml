@@ -18,6 +18,10 @@ spec:
     kind: HelmRelease
     name: prometheus-helmrelease
     namespace: flux-system
+  #
+  # Prometheus is deployed using a HelmRelease.
+  # Hence, the 'kubeConfig' field that points to the remote workload cluster is set in the HelmRelease manifest
+  #
   validation: client
   timeout: 2m
 

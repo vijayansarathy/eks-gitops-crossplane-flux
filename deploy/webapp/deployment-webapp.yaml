@@ -34,7 +34,7 @@ spec:
     spec: 
       containers:          
         - name: golang
-          image: 937351930975.dkr.ecr.us-east-1.amazonaws.com/prometheus-webapp:latest
+          image: 937351930975.dkr.ecr.us-east-1.amazonaws.com/prometheus-webapp:2.0
           imagePullPolicy: Always   
           resources:
             requests:
