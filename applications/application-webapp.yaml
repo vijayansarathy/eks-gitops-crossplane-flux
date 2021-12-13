@@ -14,8 +14,4 @@ spec:
   kubeConfig:
     secretRef:
       name: crossplane-workload-cluster-connection
-  healthChecks:
-  - kind: Deployment
-    name: s3-reader
-    namespace: nodejs      
   validation: client
