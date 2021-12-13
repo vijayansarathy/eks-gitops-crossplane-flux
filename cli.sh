@@ -16,7 +16,11 @@ flux bootstrap github \
 
 #
 # Create a Kustomization resource under 'cluster/$CLUSTER_NAME' that points to the 'crossplane' directory 
-# Pushing this file to the Git repository will trigger a Flux reconcilliation loop which will install Crossplane core components and Crossplane AWS provider-specific components
+# Pushing this file to the Git repository will trigger a Flux reconcilliation loop which will install the following:
+# 1. Crossplane core components 
+# 2. Crossplane AWS provider-specific components
+# 3. Crossplane Configuration package for creating EKS cluster and other AWS resources
+# 4. Composite resource to create an EKS cluster
 #
 mkdir -p ./clusters/${CLUSTER_NAME}
 flux create kustomization local-source \
@@ -29,8 +33,10 @@ flux create kustomization local-source \
   --export > ./clusters/$CLUSTER_NAME/crossplane.yaml
 
 #
-# Create a Kustomization resource under 'cluster/$CLUSTER_NAME' that points to the 'crossplane' directory 
-# Pushing this file to the Git repository will trigger a Flux reconcilliation loop which will install Crossplane core components and Crossplane AWS provider-specific components
+# Create a Kustomization resource under 'cluster/$CLUSTER_NAME' that points to the 'applications' directory 
+# Pushing this file to the Git repository will trigger a Flux reconcilliation loop which will install the following:
+# 1. Sample web application that exposes Prometheus metrics
+# 2. Prometheus server which scrapes the metrics from the sample application and sends it to an AMP workspace
 #
 mkdir -p ./clusters/${CLUSTER_NAME}
 flux create kustomization local-source \
