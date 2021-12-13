@@ -21,7 +21,7 @@ spec:
   prune: true
   sourceRef:
     kind: GitRepository
-    name: crossplane-source
+    name: flux-system
   kubeConfig:
     secretRef:
       name: crossplane-addon-cluster-connection    
