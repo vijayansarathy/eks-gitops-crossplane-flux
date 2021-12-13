@@ -11,7 +11,7 @@ spec:
   interval: 5m
   kubeConfig:
     secretRef:
-      name: crossplane-addon-cluster-connection    
+      name: crossplane-workload-cluster-connection    
   chart:
     spec:
       chart: prometheus

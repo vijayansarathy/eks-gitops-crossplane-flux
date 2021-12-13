@@ -6,7 +6,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 30s
-  path: ./deploy/crossplane-applications/monitoring
+  path: ./deploy/monitoring
   prune: true
   sourceRef:
     kind: GitRepository
