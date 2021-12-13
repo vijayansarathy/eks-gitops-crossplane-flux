@@ -5,6 +5,8 @@ metadata:
   name: application-prometheus
   namespace: flux-system
 spec:
+  dependsOn:
+  - name: application-webapp
   interval: 30s
   path: ./deploy/monitoring
   prune: true
