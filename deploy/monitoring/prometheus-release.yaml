@@ -10,12 +10,14 @@ metadata:
   name: prometheus-helmrelease
   namespace: flux-system
 spec:
+  # install:
+  #   createNamespace: true
   targetNamespace: monitoring
   releaseName: prometheus-for-amp
   interval: 5m
   kubeConfig:
     secretRef:
-      name: crossplane-workload-cluster-sa-connection
+      name: crossplane-workload-cluster-connection    
   chart:
     spec:
       chart: prometheus
