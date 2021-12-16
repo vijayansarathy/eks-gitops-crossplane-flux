@@ -10,6 +10,8 @@ alertmanager:
     enabled: false
 pushgateway:
     enabled: false
+kubeStateMetrics:
+    enabled: false    
 
 server:
     statefulSet:
