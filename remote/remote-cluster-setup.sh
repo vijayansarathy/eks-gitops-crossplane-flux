@@ -16,8 +16,8 @@ kubectl apply -f service-account-rbac.yaml --kubeconfig ./kubeconfig-admin
 cp kubeconfig-admin kubeconfig-sa
 SERVICE_ACCOUNT_NAME=apprunner
 SERVICE_ACCOUNT_NAMESPACE=applications
-SERVICE_ACCOUNT_SECRET_NAME=$(kubectl -n $SERVICE_ACCOUNT_NAMESPACE get sa $SERVICE_ACCOUNT_NAME -o jsonpath='{.secrets[0].name}')
-SERVICE_ACCOUNT_TOKEN=$(kubectl -n $SERVICE_ACCOUNT_NAMESPACE get secret $SERVICE_ACCOUNT_SECRET_NAME -o jsonpath={.data.token} | base64 -d) 
+SERVICE_ACCOUNT_SECRET_NAME=$(kubectl -n $SERVICE_ACCOUNT_NAMESPACE get sa $SERVICE_ACCOUNT_NAME -o jsonpath='{.secrets[0].name}' --kubeconfig ./kubeconfig-admin)
+SERVICE_ACCOUNT_TOKEN=$(kubectl -n $SERVICE_ACCOUNT_NAMESPACE get secret $SERVICE_ACCOUNT_SECRET_NAME -o jsonpath={.data.token} --kubeconfig ./kubeconfig-admin | base64 -d) 
 kubectl config set-credentials $SERVICE_ACCOUNT_NAME --token=$SERVICE_ACCOUNT_TOKEN  --kubeconfig=./kubeconfig-sa
 kubectl config set-context --current --user=$SERVICE_ACCOUNT_NAME --kubeconfig=./kubeconfig-sa
 
@@ -25,4 +25,4 @@ kubectl config set-context --current --user=$SERVICE_ACCOUNT_NAME --kubeconfig=.
 # Create a Secret named 'crossplane-workload-cluster-sa-connection' in the 'flux-system' namespace
 # Reference this Secret in Kustomization/HelmRelease that are targeting deployments to the workload cluster
 #
-kubectl -n flux-system create secret generic crossplane-workload-cluster-sa-connection --from-file=value.yaml=./kubeconfig-sa
+kubectl -n flux-system create secret generic crossplane-workload-cluster-sa-connection --from-file=value=./kubeconfig-sa
