@@ -1,8 +1,10 @@
 #
 # Bootstrapping the cluster with Flux
+# The bootstrap process will automatically create a GitRepository custom resource that points to the given repository
+# The GitRepository resource is named after the namespace where Flux GitOps ToolKit is installed. In this case, it is 'flux-system'
 #
 export CLUSTER_NAME=k8s-addon-cluster
-export GITHUB_TOKEN=817e48f922cf95b645c188ea9c7c7e0ecc417a1f
+export GITHUB_TOKEN=XXXX
 export GITHUB_USER=vijayansarathy
 kubectl create ns flux-system
 flux bootstrap github \
@@ -15,7 +17,7 @@ flux bootstrap github \
   --personal
 
 #
-# Create a Kustomization resource under 'cluster/$CLUSTER_NAME' that points to the 'crossplane' directory 
+# Create a Kustomization resource under 'cluster/$CLUSTER_NAME' that points to the 'crossplane' directory in the config repo.
 # Pushing this file to the Git repository will trigger a Flux reconcilliation loop which will install the following:
 # 1. Crossplane core components 
 # 2. Crossplane AWS provider-specific components
@@ -23,7 +25,7 @@ flux bootstrap github \
 # 4. Composite resource to create an EKS cluster
 #
 mkdir -p ./clusters/${CLUSTER_NAME}
-flux create kustomization local-source \
+flux create kustomization crossplane \
   --source=flux-system \
   --namespace=flux-system \
   --path=./crossplane \
@@ -39,7 +41,7 @@ flux create kustomization local-source \
 # 2. Prometheus server which scrapes the metrics from the sample application and sends it to an AMP workspace
 #
 mkdir -p ./clusters/${CLUSTER_NAME}
-flux create kustomization local-source \
+flux create kustomization applications \
   --source=flux-system \
   --namespace=flux-system \
   --path=./applications \
