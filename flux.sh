@@ -4,7 +4,7 @@
 # The GitRepository resource is named after the namespace where Flux GitOps ToolKit is installed. In this case, it is 'flux-system'
 #
 export CLUSTER_NAME=k8s-addon-cluster
-export GITHUB_TOKEN=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
+export GITHUB_TOKEN=ghp
 export GITHUB_USER=vijayansarathy
 kubectl create ns flux-system
 flux bootstrap github \
