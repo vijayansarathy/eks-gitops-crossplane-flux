@@ -34,22 +34,23 @@ kubectl -n crossplane-system create secret generic aws-credentials --from-file=c
 
 #
 # Next, deploy the Bitnami's Sealed Secrets controller in the 'sealed-secrets' namespace
-# Generate a SealedSecret corresponding to the 'aws-credentials' Secret created above. This is done using the 'kubeseal' CLI utility
-# The file 'aws-credentials-sealed.yaml' resulting from the operation below is what is deployed to the cluster in the GitOps workflow.
+# Then, generate a SealedSecret corresponding to the 'aws-credentials' Secret created above. This is done using the 'kubeseal' CLI utility as shown below.
+# The file 'aws-credentials-sealed.yaml' resulting from the operation below is the one to deploy to the management cluster in the GitOps workflow.
 # Push this file to the './deploy/crossplane-composition' directory of the GitHub repo that Flux is pointing to 
 #
 kubeseal --controller-namespace sealed-secrets --format yaml < aws-credentials.yaml > aws-credentials-sealed.yaml
 
 #
-# Extract the master sealing key from the controller.
+# Important! Extract the master sealing key from the controller into a YAML file.
 # After extracting the master key, the sealed secrets controller may be termintaed.
 # The controller per se will get deployed as part of the GitOps workflow. 
-# But, you must make sure that the sealing master is deployed before so that all SealedSecrets that were created using this master could be unsealed
+# But, you must make sure that the sealing master is deployed using this file before so that all SealedSecrets that were created using this master could be unsealed
 #
 kubectl get secret -n sealed-secrets -l sealedsecrets.bitnami.com/sealed-secrets-key -o yaml > sealing-master.key
 
 
 #
+# Now, you are ready to initiate the GitOps worflow.
 # Create a Kustomization resource under 'cluster/$CLUSTER_NAME' that points to the 'crossplane' directory in the config repo.
 # Pushing this file to the Git repository will trigger a Flux reconcilliation loop which will install the following:
 # 1. Crossplane core components 
