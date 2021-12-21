@@ -4,9 +4,6 @@ metadata:
   name: crossplane-core
   namespace: flux-system
 spec:
-  install:
-    createNamespace: true
-  targetNamespace: crossplane-system
   releaseName: crossplane-core
   interval: 5m
   chart:
