@@ -4,6 +4,7 @@ kind: ProviderConfig
 metadata:
   name: default
 spec:
+  assumeRoleARN: "arn:aws:iam::966549209321:role/EKS-Admin-Role"
   credentials:
     source: Secret
     secretRef:
