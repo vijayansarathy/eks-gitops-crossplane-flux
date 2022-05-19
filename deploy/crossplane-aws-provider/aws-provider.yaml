@@ -4,4 +4,12 @@ kind: Provider
 metadata:
   name: crossplane-provider-aws
 spec:
-  package: "public.ecr.aws/awsvijisarathy/crossplane-provider-aws:v0.23.0"
+  package: "public.ecr.aws/awsvijisarathy/crossplane-provider-aws:v0.27.0"  
+  #
+  # Note that the Provider lands on the cluster as a Deployment resources
+  # The name of the resource has a random suffix such as 'crossplane-provider-aws-45985ebe751d'
+  # This suffix depends on the provider revision and some string generated using some digest. 
+  # https://github.com/crossplane/crossplane/blob/c0de80c1ea2102b9569754d78bea292c46e62927/internal/controller/pkg/manager/revisioner.go#L67
+  # This suffix is not predictable a priori but it will be the same for the same provider name/version
+  #
+  
