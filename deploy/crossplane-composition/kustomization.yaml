@@ -7,6 +7,12 @@ resources:
 
 
 
+
+#
+# Previously, the AWS credentials of an IAM user were made available to the Crossplane AWS Provider using a Kubernetes Secret
+# The Kubernetes Secret was deployed using a SealedSecret resource which then gets unsealed into a Secret by the SealedSecrets Controller.
+# This is no longer needed after making the Crossplane AWS Provider run under IRSA.
+#
 # ---
 # apiVersion: kustomize.config.k8s.io/v1beta1
 # kind: Kustomization

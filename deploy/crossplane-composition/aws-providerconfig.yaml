@@ -22,7 +22,11 @@ spec:
 
 
 
-
+#
+# Previously, the AWS credentials of an IAM user were made available to the Crossplane AWS Provider using a Kubernetes Secret
+# The IAM user was then assuming an IAM role to create provider-specific Crossplane resources.
+# This is no longer needed after making the Crossplane AWS Provider run under IRSA.
+#
 # ---
 # apiVersion: aws.crossplane.io/v1beta1
 # kind: ProviderConfig
