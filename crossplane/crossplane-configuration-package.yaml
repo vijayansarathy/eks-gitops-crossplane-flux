@@ -8,7 +8,7 @@ spec:
   dependsOn:
   - name: crossplane-provider-package
   interval: 30s
-  path: ./deploy/crossplane-composition
+  path: ./deploy/management/crossplane-composition
   prune: true
   sourceRef:
     kind: GitRepository
