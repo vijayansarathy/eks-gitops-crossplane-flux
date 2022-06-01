@@ -1,0 +1,28 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta1
+kind: GitRepository
+metadata:
+  name: flux-remote-bootstrap
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  ref:
+    branch: main
+  secretRef:
+    name: flux-remote-bootstrap
+  url: ssh://git@github.com:vijayansarathy/fluxv2-deployment-apps.git
+  
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta1
+kind: Kustomization
+metadata:
+  name: flux-remote-bootstrap
+  namespace: flux-system
+spec:
+  interval: 10m0s
+  path: ./s3reader
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-remote-bootstrap
+  validation: client

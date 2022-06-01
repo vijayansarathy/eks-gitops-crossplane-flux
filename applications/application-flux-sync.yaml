@@ -1,0 +1,19 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta1
+kind: Kustomization
+metadata:
+  name: application-flux-sync 
+  namespace: flux-system
+spec:
+  dependsOn:
+  - name: application-flux-toolkit 
+  interval: 30s
+  path: ./deploy/flux-sync 
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  kubeConfig:
+    secretRef:
+      name: crossplane-flux-cluster-connection
+  validation: client
