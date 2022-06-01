@@ -1,0 +1,32 @@
+#
+# This deployment manigest is not relevant anymore
+# Workloads that are to be deployed on a workloads cluster are synced to the latter using Flux that is installed on the respective workload cluster
+# Flux gets installed on the workload cluster by using Flux that runs on the management cluster using Flux's remote deployment capability
+#
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta1
+kind: Kustomization
+metadata:
+  name: application-prometheus
+  namespace: flux-system
+spec:
+  dependsOn:
+  - name: application-webapp
+  interval: 30s
+  path: ./deploy/monitoring
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  healthChecks:
+  - apiVersion: helm.toolkit.fluxcd.io/v2beta1
+    kind: HelmRelease
+    name: prometheus-helmrelease
+    namespace: flux-system
+  #
+  # Prometheus is deployed using a HelmRelease.
+  # Hence, the 'kubeConfig' field that points to the remote workload cluster is set in the HelmRelease manifest
+  #
+  validation: client
+  timeout: 2m
+
