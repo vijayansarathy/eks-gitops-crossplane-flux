@@ -10,7 +10,7 @@ spec:
     branch: main
   secretRef:
     name: flux-remote-bootstrap
-  url: ssh://git@github.com:vijayansarathy/fluxv2-deployment-apps.git
+  url: ssh://git@github.com/vijayansarathy/fluxv2-deployment-apps.git
   
 ---
 apiVersion: kustomize.toolkit.fluxcd.io/v1beta1
