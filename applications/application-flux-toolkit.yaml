@@ -1,0 +1,19 @@
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta1
+kind: Kustomization
+metadata:
+  name: application-flux-toolkit 
+  namespace: flux-system
+spec:
+  dependsOn:
+  - name: application-sealed-secrets-controller
+  interval: 30s
+  path: ./deploy/flux-toolkit
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  kubeConfig:
+    secretRef:
+      name: crossplane-flux-cluster-connection
+  validation: client
