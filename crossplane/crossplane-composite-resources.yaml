@@ -8,7 +8,7 @@ spec:
   dependsOn:
   - name: crossplane-configuration-package
   interval: 30s
-  path: ./deploy/crossplane-xr
+  path: ./deploy/management/crossplane-xr
   prune: true
   sourceRef:
     kind: GitRepository

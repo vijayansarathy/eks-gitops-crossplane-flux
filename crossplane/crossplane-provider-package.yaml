@@ -8,7 +8,7 @@ spec:
   dependsOn:
   - name: crossplane-helmrelease
   interval: 30s
-  path: ./deploy/crossplane-aws-provider
+  path: ./deploy/management/crossplane-aws-provider
   prune: true
   sourceRef:
     kind: GitRepository

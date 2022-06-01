@@ -6,7 +6,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 30s
-  path: ./deploy/crossplane-core
+  path: ./deploy/management/crossplane-core
   prune: true
   sourceRef:
     kind: GitRepository

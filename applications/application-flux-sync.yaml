@@ -8,7 +8,7 @@ spec:
   dependsOn:
   - name: application-flux-toolkit 
   interval: 30s
-  path: ./deploy/flux-sync 
+  path: ./deploy/workload/flux-sync 
   prune: true
   sourceRef:
     kind: GitRepository
