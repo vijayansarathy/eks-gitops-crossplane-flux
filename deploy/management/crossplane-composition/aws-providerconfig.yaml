@@ -10,7 +10,16 @@ metadata:
   name: default
 spec:
   assumeRoleChain:
-    - roleARN:  arn:aws:iam::937351930975:role/EKS-Crossplane-ServiceAccount-Role
+  credentials:
+    source: IRSA
+    #
+    # Following configuration is used when credentials of an IAM user are provided through a Secret
+    #
+    # source: Secret
+    # secretRef:
+    #   namespace: crossplane-system
+    #   name: aws-credentials
+    #   key: credentials
 
 
 

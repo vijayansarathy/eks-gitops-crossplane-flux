@@ -25,11 +25,6 @@ kind: Provider
 metadata:
   name: crossplane-provider-aws
 spec:
-  #
-  # It is best to not to use the 'master' tag for the provider
-  # There might be version compatibility issues with Crossplane version and the AWS provider version
-  # Checkout for all available versions: https://github.com/crossplane/provider-aws
-  #
   package: xpkg.upbound.io/upbound/provider-aws:v0.18.0
   #
   # Note that the Provider lands on the cluster as a Deployment resources
