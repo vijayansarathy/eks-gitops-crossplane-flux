@@ -9,7 +9,6 @@ metadata:
   #
   name: default
 spec:
-  assumeRoleChain:
   credentials:
     source: IRSA
     #
