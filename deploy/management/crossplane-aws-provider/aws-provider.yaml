@@ -30,7 +30,7 @@ spec:
   # There might be version compatibility issues with Crossplane version and the AWS provider version
   # Checkout for all available versions: https://github.com/crossplane/provider-aws
   #
-  package: "public.ecr.aws/awsvijisarathy/crossplane-provider-aws:v0.27.0"  
+  package: xpkg.upbound.io/upbound/provider-aws:v0.18.0
   #
   # Note that the Provider lands on the cluster as a Deployment resources
   # The name of the resource has a random suffix such as 'crossplane-provider-aws-45985ebe751d'
