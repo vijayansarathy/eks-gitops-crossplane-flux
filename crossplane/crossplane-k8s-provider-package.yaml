@@ -13,6 +13,10 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
+  healthChecks:
+  - kind: Deployment
+    name: provider-kubernetes-13b4626ee34c
+    namespace: crossplane-system    
   validation: client
   timeout: 2m
 
