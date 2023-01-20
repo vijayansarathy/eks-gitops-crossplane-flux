@@ -10,7 +10,7 @@ metadata:
   name: default
 spec:
   assumeRoleChain:
-    roleARN:  arn:aws:iam::937351930975:role/EKS-Crossplane-ServiceAccount-Role
+    - roleARN:  arn:aws:iam::937351930975:role/EKS-Crossplane-ServiceAccount-Role
 
 
 
