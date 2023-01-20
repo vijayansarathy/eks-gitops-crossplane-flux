@@ -2,17 +2,14 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1beta1
 kind: Kustomization
 metadata:
-  name: crossplane-k8s-provider-package
+  name: crossplane
   namespace: flux-system
 spec:
-  dependsOn:
-  - name: crossplane-aws-provider-package
   interval: 30s
-  path: ./deploy/management/crossplane-k8s-provider
+  path: ./crossplane
   prune: true
   sourceRef:
     kind: GitRepository
     name: flux-system
   validation: client
-  timeout: 2m
 
