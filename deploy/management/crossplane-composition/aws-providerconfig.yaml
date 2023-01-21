@@ -10,7 +10,7 @@ metadata:
   name: default
 spec:
   credentials:
-    source: IRSA
+    source: InjectedIdentity
     #
     # Following configuration is used when credentials of an IAM user are provided through a Secret
     #
