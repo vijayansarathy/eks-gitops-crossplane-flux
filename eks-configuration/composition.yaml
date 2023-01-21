@@ -1,0 +1,711 @@
+---
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: amazon-eks-cluster
+  labels:
+    provider: aws
+    service: eks
+    compute: managed
+spec:
+  writeConnectionSecretsToNamespace: crossplane-system
+  
+  compositeTypeRef:
+    apiVersion: eks.sarathy.io/v1beta1
+    kind: EKSCluster
+
+  patchSets:
+    - name: common-parameters
+      patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: "spec.parameters.region"
+          toFieldPath: "spec.forProvider.region"
+
+      #
+      # This is an assortment of mappings
+      # Some of them are mappings from fields defined in the XR to fields in the spec.forProvider section of the MR
+      # Some of them are mappings from the status fields of the XR to fields in the spec.forProvider section of the MR
+      # Note that the status fields of the XR themselves are populated by propagating certain fields from the status fields of the MR back up to the XR
+      #
+    - name: cluster-info-mappings
+      patches:
+        - fromFieldPath: status.account_id
+          toFieldPath: spec.forProvider.manifest.data.account_id
+          policy:
+            fromFieldPath: Required
+        - fromFieldPath: spec.parameters.region
+          toFieldPath: spec.forProvider.manifest.data.region
+        - fromFieldPath: status.ekscluster.arn
+          toFieldPath: spec.forProvider.manifest.data.cluster_arn
+          policy:
+            fromFieldPath: Required
+        - fromFieldPath: status.ekscluster.oidc   
+          toFieldPath: spec.forProvider.manifest.data.oidc_provider
+          policy:
+            fromFieldPath: Required          
+
+  resources:
+    - name: vpc
+      base:
+        apiVersion: ec2.aws.crossplane.io/v1beta1
+        kind: VPC
+        spec:
+          forProvider:
+            enableDnsSupport: true
+            enableDnsHostNames: true
+            tags:
+              - key: Name
+      patches:    
+        - type: PatchSet
+          patchSetName: common-parameters      
+        - fromFieldPath: spec.parameters.vpc-cidrBlock
+          toFieldPath: spec.forProvider.cidrBlock
+        - fromFieldPath: spec.parameters.vpc-name
+          toFieldPath: spec.forProvider.tags[0].value
+          #
+          # Get the AWS account ID from the status field of the VPC MR and propagate it back up to the status field in the XR
+          #
+        - type: ToCompositeFieldPath
+          fromFieldPath: status.atProvider.ownerId
+          toFieldPath: status.account_id
+
+    - name: internetgateway
+      base:
+        apiVersion: ec2.aws.crossplane.io/v1beta1
+        kind: InternetGateway
+        metadata:
+          labels:
+            type: igw
+        spec:
+          forProvider:
+            vpcIdSelector:
+              matchControllerRef: true
+            tags:
+              - key: Name              
+      patches:    
+        - type: PatchSet
+          patchSetName: common-parameters 
+        - type: CombineFromComposite
+          combine:
+            variables:
+              - fromFieldPath: spec.parameters.vpc-name
+            strategy: string
+            string:
+              fmt: "%s-igw"
+          toFieldPath: spec.forProvider.tags[0].value
+          policy:
+            fromFieldPath: Required
+
+    - name: subnet-public-1
+      base:
+        apiVersion: ec2.aws.crossplane.io/v1beta1
+        kind: Subnet
+        metadata:
+          labels:
+            type: subnet
+            visibility: public
+        spec:
+          forProvider:
+            mapPublicIpOnLaunch: true
+            vpcIdSelector:
+              matchControllerRef: true
+            tags:
+              - key: Name
+              - key: kubernetes.io/role/elb
+                value: "1"
+      patches:             
+        - type: CombineFromComposite
+          combine:
+            variables:
+              - fromFieldPath: spec.parameters.vpc-name
+              - fromFieldPath: spec.parameters.subnet1-public-name
+            strategy: string
+            string:
+              fmt: "%s-%s"
+          toFieldPath: spec.forProvider.tags[0].value
+          policy:
+            fromFieldPath: Required
+        - type: PatchSet
+          patchSetName: common-parameters      
+        - fromFieldPath: spec.parameters.subnet1-public-cidrBlock
+          toFieldPath: spec.forProvider.cidrBlock
+        - fromFieldPath: spec.parameters.subnet1-public-availabilityZone
+          toFieldPath: spec.forProvider.availabilityZone
+        - fromFieldPath: spec.parameters.subnet1-public-availabilityZone
+          toFieldPath: metadata.labels.zone     
+
+    - name: subnet-public-2
+      base:
+        apiVersion: ec2.aws.crossplane.io/v1beta1
+        kind: Subnet
+        metadata:
+          labels:
+            type: subnet
+            visibility: public          
+        spec:
+          forProvider:
+            mapPublicIpOnLaunch: true
+            vpcIdSelector:
+              matchControllerRef: true
+            tags:
+              - key: Name
+              - key: kubernetes.io/role/elb
+                value: "1"
+      patches:             
+        - type: CombineFromComposite
+          combine:
+            variables:
+              - fromFieldPath: spec.parameters.vpc-name
+              - fromFieldPath: spec.parameters.subnet2-public-name
+            strategy: string
+            string:
+              fmt: "%s-%s"
+          toFieldPath: spec.forProvider.tags[0].value
+          policy:
+            fromFieldPath: Required
+        - type: PatchSet
+          patchSetName: common-parameters      
+        - fromFieldPath: spec.parameters.subnet2-public-cidrBlock
+          toFieldPath: spec.forProvider.cidrBlock
+        - fromFieldPath: spec.parameters.subnet2-public-availabilityZone
+          toFieldPath: spec.forProvider.availabilityZone
+        - fromFieldPath: spec.parameters.subnet2-public-availabilityZone
+          toFieldPath: metadata.labels.zone  
+
+    - name: subnet-private-1
+      base:
+        apiVersion: ec2.aws.crossplane.io/v1beta1
+        kind: Subnet
+        metadata:
+          labels:
+            type: subnet
+            visibility: private          
+        spec:
+          forProvider:
+            mapPublicIpOnLaunch: false
+            vpcIdSelector:
+              matchControllerRef: true
+            tags:
+              - key: Name
+              - key: kubernetes.io/role/internal-elb
+                value: "1"
+      patches:             
+        - type: CombineFromComposite
+          combine:
+            variables:
+              - fromFieldPath: spec.parameters.vpc-name
+              - fromFieldPath: spec.parameters.subnet1-private-name
+            strategy: string
+            string:
+              fmt: "%s-%s"
+          toFieldPath: spec.forProvider.tags[0].value
+          policy:
+            fromFieldPath: Required
+        - type: PatchSet
+          patchSetName: common-parameters      
+        - fromFieldPath: spec.parameters.subnet1-private-cidrBlock
+          toFieldPath: spec.forProvider.cidrBlock
+        - fromFieldPath: spec.parameters.subnet1-private-availabilityZone
+          toFieldPath: spec.forProvider.availabilityZone
+        - fromFieldPath: spec.parameters.subnet1-private-availabilityZone
+          toFieldPath: metadata.labels.zone                   
+          
+    - name: subnet-private-2
+      base:
+        apiVersion: ec2.aws.crossplane.io/v1beta1
+        kind: Subnet
+        metadata:
+          labels:
+            type: subnet
+            visibility: private           
+        spec:
+          forProvider:
+            mapPublicIpOnLaunch: false
+            vpcIdSelector:
+              matchControllerRef: true
+            tags:
+              - key: Name
+              - key: kubernetes.io/role/internal-elb
+                value: "1"
+      patches:             
+        - type: CombineFromComposite
+          combine:
+            variables:
+              - fromFieldPath: spec.parameters.vpc-name
+              - fromFieldPath: spec.parameters.subnet2-private-name
+            strategy: string
+            string:
+              fmt: "%s-%s"
+          toFieldPath: spec.forProvider.tags[0].value
+          policy:
+            fromFieldPath: Required
+        - type: PatchSet
+          patchSetName: common-parameters      
+        - fromFieldPath: spec.parameters.subnet2-private-cidrBlock
+          toFieldPath: spec.forProvider.cidrBlock
+        - fromFieldPath: spec.parameters.subnet2-private-availabilityZone
+          toFieldPath: spec.forProvider.availabilityZone
+        - fromFieldPath: spec.parameters.subnet2-private-availabilityZone
+          toFieldPath: metadata.labels.zone             
+
+    - name: elastic-ip-1
+      base:
+        apiVersion: ec2.aws.crossplane.io/v1beta1
+        kind: Address
+        metadata:
+          labels:
+            type: eip-1
+        spec:
+          forProvider:
+            domain: vpc
+      patches:    
+        - type: PatchSet
+          patchSetName: common-parameters     
+
+    - name: elastic-ip-2
+      base:
+        apiVersion: ec2.aws.crossplane.io/v1beta1
+        kind: Address
+        metadata:
+          labels:
+            type: eip-2        
+        spec:
+          forProvider:
+            domain: vpc
+      patches:    
+        - type: PatchSet
+          patchSetName: common-parameters     
+
+    - name: natgateway-1
+      base:
+        apiVersion: ec2.aws.crossplane.io/v1beta1
+        kind: NATGateway
+        metadata:
+          labels:
+            type: natgw-1
+        spec:
+          forProvider:
+            allocationIdSelector:
+              matchLabels:
+                type: eip-1
+            vpcIdSelector:
+              matchControllerRef: true
+            subnetIdSelector:
+              matchLabels:
+                type: subnet
+                visibility: public                   
+            tags:
+              - key: Name                    
+      patches:             
+        - type: CombineFromComposite
+          combine:
+            variables:
+              - fromFieldPath: spec.parameters.vpc-name
+            strategy: string
+            string:
+              fmt: "%s-nat-gateway-1"
+          toFieldPath: spec.forProvider.tags[0].value
+          policy:
+            fromFieldPath: Required
+        - type: PatchSet
+          patchSetName: common-parameters      
+        - fromFieldPath: spec.parameters.subnet1-public-availabilityZone
+          toFieldPath: spec.forProvider.subnetIdSelector.matchLabels.zone
+
+    - name: natgateway-2
+      base:
+        apiVersion: ec2.aws.crossplane.io/v1beta1
+        kind: NATGateway
+        metadata:
+          labels:
+            type: natgw-2
+        spec:
+          forProvider:
+            allocationIdSelector:
+              matchLabels:
+                type: eip-2 
+            vpcIdSelector:
+              matchControllerRef: true   
+            subnetIdSelector:
+              matchLabels:
+                type: subnet
+                visibility: public                   
+            tags:
+              - key: Name                    
+      patches:             
+        - type: CombineFromComposite
+          combine:
+            variables:
+              - fromFieldPath: spec.parameters.vpc-name
+            strategy: string
+            string:
+              fmt: "%s-nat-gateway-2"
+          toFieldPath: spec.forProvider.tags[0].value
+          policy:
+            fromFieldPath: Required
+        - type: PatchSet
+          patchSetName: common-parameters      
+        - fromFieldPath: spec.parameters.subnet2-public-availabilityZone
+          toFieldPath: spec.forProvider.subnetIdSelector.matchLabels.zone       
+
+    - name: routetable-public
+      base:
+        apiVersion: ec2.aws.crossplane.io/v1beta1
+        kind: RouteTable
+        spec:
+          forProvider:
+            vpcIdSelector:
+              matchControllerRef: true
+            routes:
+              - destinationCidrBlock: 0.0.0.0/0
+                gatewayIdSelector:
+                  matchLabels:
+                    type: igw
+            associations:
+              - subnetIdSelector:
+                  matchLabels:
+                    type: subnet
+                    visibility: public                   
+              - subnetIdSelector:
+                  matchLabels:
+                    type: subnet
+                    visibility: public                   
+            tags:
+              - key: Name
+      patches:    
+        - type: CombineFromComposite
+          combine:
+            variables:
+              - fromFieldPath: spec.parameters.vpc-name
+            strategy: string
+            string:
+              fmt: "%s-public-route-table"
+          toFieldPath: spec.forProvider.tags[0].value
+          policy:
+            fromFieldPath: Required      
+        - type: PatchSet
+          patchSetName: common-parameters 
+        - fromFieldPath: spec.parameters.subnet1-public-availabilityZone
+          toFieldPath: spec.forProvider.associations[0].subnetIdSelector.matchLabels.zone 
+        - fromFieldPath: spec.parameters.subnet2-public-availabilityZone
+          toFieldPath: spec.forProvider.associations[1].subnetIdSelector.matchLabels.zone 
+
+    - name: routetable-private-1
+      base:
+        apiVersion: ec2.aws.crossplane.io/v1beta1
+        kind: RouteTable
+        spec:
+          forProvider:
+            vpcIdSelector:
+              matchControllerRef: true
+            routes:
+              - destinationCidrBlock: 0.0.0.0/0
+                natGatewayIdSelector:
+                  matchLabels:
+                    type: natgw-1
+            associations:
+              - subnetIdSelector:
+                  matchLabels:
+                    type: subnet
+                    visibility: private                   
+            tags:
+              - key: Name
+      patches:    
+        - type: CombineFromComposite
+          combine:
+            variables:
+              - fromFieldPath: spec.parameters.vpc-name
+            strategy: string
+            string:
+              fmt: "%s-private-route-table-1"
+          toFieldPath: spec.forProvider.tags[0].value
+          policy:
+            fromFieldPath: Required      
+        - type: PatchSet
+          patchSetName: common-parameters           
+        - fromFieldPath: spec.parameters.subnet1-public-availabilityZone
+          toFieldPath: spec.forProvider.associations[0].subnetIdSelector.matchLabels.zone 
+
+    - name: routetable-private-2
+      base:
+        apiVersion: ec2.aws.crossplane.io/v1beta1
+        kind: RouteTable
+        spec:
+          forProvider:
+            vpcIdSelector:
+              matchControllerRef: true
+            routes:
+              - destinationCidrBlock: 0.0.0.0/0
+                natGatewayIdSelector:
+                  matchLabels:
+                    type: natgw-2
+            associations:
+              - subnetIdSelector:
+                  matchLabels:
+                    type: subnet
+                    visibility: private                   
+            tags:
+              - key: Name
+      patches:    
+        - type: CombineFromComposite
+          combine:
+            variables:
+              - fromFieldPath: spec.parameters.vpc-name
+            strategy: string
+            string:
+              fmt: "%s-private-route-table-2"
+          toFieldPath: spec.forProvider.tags[0].value
+          policy:
+            fromFieldPath: Required      
+        - type: PatchSet
+          patchSetName: common-parameters   
+        - fromFieldPath: spec.parameters.subnet2-public-availabilityZone
+          toFieldPath: spec.forProvider.associations[0].subnetIdSelector.matchLabels.zone 
+
+    - name: eks-cluster
+      base:
+        apiVersion: eks.aws.crossplane.io/v1beta1
+        kind: Cluster
+        spec:
+          forProvider:
+            resourcesVpcConfig:
+              endpointPrivateAccess: false
+              endpointPublicAccess: true
+              subnetIdSelector:
+                matchLabels:
+                  type: subnet
+          writeConnectionSecretToRef:
+            namespace: crossplane-system
+      patches:                    
+        - type: PatchSet
+          patchSetName: common-parameters      
+        - fromFieldPath: "spec.parameters.k8s-version"
+          toFieldPath: "spec.forProvider.version"            
+          #
+          # Deternmine the name the K8s Secret based on the metadata.uid field of the Cluster XR
+          # The metadata.uid field has a unique value for each Cluster MR 
+          # Thus, it allows us to provision multiple EKS clusters and create the corresponding Secrets all in the same namespace.
+          #
+        - fromFieldPath: "metadata.uid"
+          toFieldPath: "spec.writeConnectionSecretToRef.name"
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-ekscluster-connection"            
+        - fromFieldPath: "spec.parameters.cluster-role"
+          toFieldPath: "spec.forProvider.roleArn"          
+          #
+          # Retrieve the ARN, OIDC URL and the API server endpoint of the Cluster MR and propagate it back up to the status fields of the XR
+          #       
+        - type: ToCompositeFieldPath
+          fromFieldPath: status.atProvider.identity.oidc.issuer
+          toFieldPath: status.ekscluster.oidc
+        - type: ToCompositeFieldPath
+          fromFieldPath: status.atProvider.arn
+          toFieldPath: status.ekscluster.arn    
+        - type: ToCompositeFieldPath
+          fromFieldPath: status.atProvider.endpoint
+          toFieldPath: status.ekscluster.endpoint              
+      connectionDetails:
+          #
+          # Crossplane creates a Secret as specified in the 'writeConnectionSecretToRef' field 
+          # Map the fields of this Secret to fields of another Secret specified in the XR
+          #
+        - name: cluster-ca
+          fromConnectionSecretKey: clusterCA
+        - name: apiserver-endpoint
+          fromConnectionSecretKey: endpoint
+        - name: value
+          fromConnectionSecretKey: kubeconfig
+
+    - name: eks-nodegroup
+      base:
+        apiVersion: eks.aws.crossplane.io/v1alpha1
+        kind: NodeGroup
+        spec:
+          forProvider:
+            instanceTypes: 
+              - m5.large            
+            scalingConfig:
+              minSize: 1
+            subnetSelector:
+              matchLabels:
+                type: subnet
+                visibility: private                 
+            clusterNameSelector:
+              matchControllerRef: true
+      patches:    
+        - type: PatchSet
+          patchSetName: common-parameters      
+        - fromFieldPath: "spec.parameters.workers-size"
+          toFieldPath: "spec.forProvider.scalingConfig.desiredSize"    
+        - fromFieldPath: "spec.parameters.workers-size"
+          toFieldPath: "spec.forProvider.scalingConfig.maxSize"      
+        - fromFieldPath: "spec.parameters.workload-type"
+          toFieldPath: "spec.forProvider.amiType"            
+          transforms:
+          - type: map
+            map:
+              gpu: AL2_x86_64_GPU
+              non-gpu: AL2_x86_64        
+        - fromFieldPath: "spec.parameters.workernode-role"
+          toFieldPath: "spec.forProvider.nodeRole"               
+
+    - name: oidc-provider
+      base:
+        apiVersion: iam.aws.crossplane.io/v1beta1
+        kind: OpenIDConnectProvider
+        spec:
+          forProvider:
+            clientIDList:
+              - sts.amazonaws.com
+            thumbprintList:
+              - "9e99a48a9960b14926bb7f3b02e22da2b0ab7280"
+      patches:
+        - fromFieldPath: status.ekscluster.oidc
+          toFieldPath: spec.forProvider.url
+          policy:
+            fromFieldPath: Required
+
+      #
+      # The Crossplane Kubernetes Provider is designed to enable deployment and management of arbitrary Kubernetes resources in clusters. 
+      # It defines an Object resource type which represents arbitrary Kubernetes resources.
+      # Then, it uses a Kubernetes controller to reconcile Object typed resources to manage the corresponding Kubernetes resources.
+      # The detailed manifest for the K8s resource is defined in spec.forProvider.manifest. 
+      # So, essentially, Object resource simply wraps the manifest of target Kubernetes resource
+      # By convention in Crossplane, we usually call Object as managed resource, and the target Kubernetes resource as external resource.
+      # The managed resource Object is always co-located with the provider so that it can be watched by the provider. 
+      # The external resource can be either co-located with the provider on the same cluster, or on a remote cluster, depending on the kubeconfig information defined in spec.providerConfigRef.
+      # 
+
+      #
+      # Using the Crossplane Kubernetes Provider, create a ConfigMap in the management cluster with information about the workload cluster
+      # As the ConfigMap (external resource) is created in the management cluster, we use use the ProviderConfig that was created in the management cluster for the Crossplane Kubernetes Provider
+      # This is dobe by explicitly specifying the 'spec.providerConfigRef' field
+      # If the field is not set, Crossplane will use a ProviderConfig named 'default' which pertains to the Crossplane AWS Provider
+      # 
+    - name: cluster-info-configmap
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha1
+        kind: Object
+        metadata:
+          name: cluster-info-configmap
+        spec:
+          forProvider:
+            manifest:
+              apiVersion: v1
+              kind: ConfigMap
+              metadata:
+                name: cluster-info-tmp
+                namespace: flux-system
+                labels:
+                  createdBy: crossplane
+              data:
+                account_id:
+                region:
+                cluster_arn:
+                oidc_provider:
+          providerConfigRef:
+            name: k8s-providerconfig
+      patches:
+        - type: PatchSet
+          patchSetName: cluster-info-mappings         
+          #
+          # Redefine the name of the ConfigMap using the UID of the Cluster XR
+          #
+        - fromFieldPath: "metadata.uid"
+          toFieldPath: spec.forProvider.manifest.metadata.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-cluster-info"   
+         
+
+      #
+      # Create a ProviderConfig that can be used by the Crossplane Kubernetes Provider to create resources in the workload cluster
+      # This ProviderConfig references the 'kubeconfig' field in K8s Secret that corresponds to the workload cluster and which was created in the management cluster by Crossplane AWS Provider
+      # Note that this 'kubeconfig' pertains to the credentials of the workload cluster creator and therefore has admin privileges in the workload cluster
+      #
+    - name: providerconfig-workload-cluster
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha1
+        kind: Object
+        metadata:
+          name: providerconfig-workload-cluster
+        spec:
+          forProvider:
+            manifest:
+              apiVersion: aws.crossplane.io/v1beta1
+              kind: ProviderConfig
+              metadata:
+                name: providerconfig-workload-cluster-tmp
+                labels:
+                  createdBy: crossplane
+              spec:
+                credentials:
+                  source: Secret
+                  secretRef:
+                    name: ekscluster-connection-tmp
+                    namespace: crossplane-system
+                    key: kubeconfig
+          providerConfigRef:
+            name: k8s-providerconfig
+      patches:
+          #
+          # Redefine the name of the ProviderConfig using the UID of the Cluster XR
+          #      
+        - fromFieldPath: "metadata.uid"
+          toFieldPath: spec.forProvider.manifest.metadata.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-providerconfig-workload-cluster"   
+          #
+          # Set the name of the K8s Secret referenced by the ProviderConfig resource for its credential
+          #                 
+        - fromFieldPath: "metadata.uid"
+          toFieldPath: spec.forProvider.manifest.spec.credentials.secretRef.name
+          transforms:
+            - type: string
+              string:
+                fmt: '%s-ekscluster-connection'
+
+      #
+      # Using the Crossplane Kubernetes Provider, create a ConfigMap in the workload cluster
+      # As the ConfigMap (external resource) is created in the workload cluster, we use the ProviderConfig that was created with credentials for the workload cluster
+      # 
+    - name: cluster-info-remote-configmap
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha1
+        kind: Object
+        metadata:
+          name: cluster-info-remote-configmap
+        spec:
+          forProvider:
+            manifest:
+              apiVersion: v1
+              kind: ConfigMap
+              metadata:
+                name: cluster-info
+                namespace: kube-system
+                labels:
+                  createdBy: crossplane
+              data:
+                account_id:
+                region:
+                cluster_arn:
+                oidc_provider:
+          providerConfigRef:
+            name: k8s-providerconfig-tmp
+      patches:
+        - type: PatchSet
+          patchSetName: cluster-info-mappings         
+          #
+          # Set the name of the ProviderConfig using the UID of the Cluster XR
+          #      
+        - fromFieldPath: "metadata.uid"
+          toFieldPath: spec.providerConfigRef.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-providerconfig-workload-cluster"   

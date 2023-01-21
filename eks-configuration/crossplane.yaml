@@ -1,0 +1,12 @@
+apiVersion: meta.pkg.crossplane.io/v1alpha1
+kind: Configuration
+metadata:
+  name: eks-cluster-composition
+  annotations:
+    provider: aws
+spec:
+  crossplane:
+    version: ">=v1.5.0"
+  dependsOn:
+    - provider: 937351930975.dkr.ecr.us-east-1.amazonaws.com/crossplane-aws-provider
+      version: ">=v0.30.0"
