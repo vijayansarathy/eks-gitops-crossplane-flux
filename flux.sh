@@ -4,7 +4,7 @@
 # The GitRepository resource is named after the namespace where Flux GitOps ToolKit is installed. In this case, it is 'flux-system'
 # The bootstrap process will configure the repository with an SSH key for read-only access
 #
-export GITHUB_TOKEN=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
+export GITHUB_TOKEN=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
 export GITHUB_USER=vijayansarathy
 export CLUSTER_NAME=k8s-gitops-cluster
 
@@ -93,7 +93,6 @@ flux create kustomization crossplane \
   --namespace=flux-system \
   --path=./crossplane \
   --prune=true \
-  --validation=client \
   --interval=30s \
   --export > ./clusters/$CLUSTER_NAME/crossplane.yaml
 
@@ -111,7 +110,6 @@ flux create kustomization applications \
   --namespace=flux-system \
   --path=./applications \
   --prune=true \
-  --validation=client \
   --interval=30s \
   --export > ./clusters/$CLUSTER_NAME/applications.yaml
 
