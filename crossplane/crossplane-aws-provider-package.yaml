@@ -22,7 +22,7 @@ spec:
     # This suffix is not predictable a priori but it will be the same for the same provider name/version
     #    
   - kind: Deployment
-    name: crossplane-provider-aws-f0609d4e8445
+    name: crossplane-provider-aws-b03f1826616c
     namespace: crossplane-system
   validation: client
   timeout: 2m
