@@ -25,7 +25,7 @@ kind: Provider
 metadata:
   name: crossplane-provider-aws
 spec:
-  package: xpkg.upbound.io/upbound/provider-aws:v0.18.0
+  package: public.ecr.aws/awsvijisarathy/upbound-aws-provider:v0.18.0
   #
   # Note that the Provider lands on the cluster as a Deployment resources
   # The name of the resource has a random suffix such as 'crossplane-provider-aws-45985ebe751d'
