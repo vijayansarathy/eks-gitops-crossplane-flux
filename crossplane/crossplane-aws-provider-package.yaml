@@ -14,9 +14,6 @@ spec:
     kind: GitRepository
     name: flux-system
   healthChecks:
-  # - kind: Deployment
-  #   name: sealed-secrets-controller
-  #   namespace: sealed-secrets
     #
     # Note that the Provider lands on the cluster as a Deployment resources
     # The name of the resource has a random suffix such as 'crossplane-provider-aws-45985ebe751d'
