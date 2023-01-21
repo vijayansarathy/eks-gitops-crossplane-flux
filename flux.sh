@@ -4,13 +4,12 @@
 # The GitRepository resource is named after the namespace where Flux GitOps ToolKit is installed. In this case, it is 'flux-system'
 # The bootstrap process will configure the repository with an SSH key for read-only access
 #
-export GITHUB_TOKEN=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
+export GITHUB_TOKEN=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
 export GITHUB_USER=vijayansarathy
 export CLUSTER_NAME=k8s-gitops-cluster
 
 kubectl create ns flux-system
 flux bootstrap github \
-  --components-extra=image-reflector-controller,image-automation-controller \
   --owner=$GITHUB_USER \
   --namespace=flux-system \
   --repository=eks-gitops-crossplane-flux \
