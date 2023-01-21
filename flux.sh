@@ -4,7 +4,7 @@
 # The GitRepository resource is named after the namespace where Flux GitOps ToolKit is installed. In this case, it is 'flux-system'
 # The bootstrap process will configure the repository with an SSH key for read-only access
 #
-export GITHUB_TOKEN=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
+export GITHUB_TOKEN=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
 export GITHUB_USER=vijayansarathy
 export CLUSTER_NAME=k8s-gitops-cluster
 
