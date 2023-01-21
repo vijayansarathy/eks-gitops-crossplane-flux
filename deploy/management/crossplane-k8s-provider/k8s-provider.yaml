@@ -10,6 +10,9 @@ spec:
   - '--debug'
 
 ---
+#
+# The Crossplane Kubernetes Provider is designed to enable deployment and management of arbitrary Kubernetes resources in clusters
+#
 apiVersion: pkg.crossplane.io/v1
 kind: Provider
 metadata:
