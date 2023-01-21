@@ -1,0 +1,37 @@
+#
+# Crossplane AWS Provider configuration to make the provider Pod run under IRSA instead of using the credentials of an IAM user
+# Deploying this will result in the creation of a service account under whose identify the Crossplane Controller will run.
+# The annotation specified here will be added to the service account so that it gets associated with the IAM role specified in the annotation.
+# However, trust relationship of the IAM role should reference the service account in order for IRSA to work and this is where the chicken-and-egg problem raises.
+# The service account under which the Provider Pod runs is not known apriori and therefore this approach is not well-suited for automation because 
+# The name of the service account matches the pattern "crossplane-provider-aws-XXX" where the "XXX" suffix is unique for every Crossplane AWS Provider version.
+# One viable alternative is to use a wild-card entry for the service account such as "crossplane-provider-aws-*"
+# Refer to the documentation here: https://github.com/crossplane/provider-aws/blob/master/AUTHENTICATION.md#steps
+#
+---
+apiVersion: pkg.crossplane.io/v1alpha1
+kind: ControllerConfig
+metadata:
+  name: aws-config
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::937351930975:role/EKS-Crossplane-ServiceAccount-Role
+spec:
+  podSecurityContext:
+    fsGroup: 2000
+
+---
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: crossplane-provider-aws
+spec:
+  package: xpkg.upbound.io/upbound/provider-aws:v0.18.0
+  #
+  # Note that the Provider lands on the cluster as a Deployment resources
+  # The name of the resource has a random suffix such as 'crossplane-provider-aws-45985ebe751d'
+  # This suffix depends on the provider revision and some string generated using some digest. 
+  # https://github.com/crossplane/crossplane/blob/c0de80c1ea2102b9569754d78bea292c46e62927/internal/controller/pkg/manager/revisioner.go#L67
+  # This suffix is not predictable a priori but it will be the same for the same provider name/version
+  #  
+  controllerConfigRef:
+    name: aws-config    
