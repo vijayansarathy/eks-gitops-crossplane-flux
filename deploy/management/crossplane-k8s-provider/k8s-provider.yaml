@@ -15,6 +15,6 @@ kind: Provider
 metadata:
   name: provider-kubernetes
 spec:
-  package: "public.ecr.aws/awsvijisarathy/crossplane-k8s-provider:main"
+  package: 937351930975.dkr.ecr.us-east-1.amazonaws.com/crossplane-k8s-provider:v0.4.1
   controllerConfigRef:
     name: k8s-config
