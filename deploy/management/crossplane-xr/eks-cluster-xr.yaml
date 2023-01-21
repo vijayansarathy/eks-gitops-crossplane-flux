@@ -28,7 +28,7 @@ spec:
     cluster-role: arn:aws:iam::937351930975:role/EKS-Cluster-Role
     workernode-role: arn:aws:iam::937351930975:role/EKS-WorkerNode-Role
 
-    k8s-version: "1.21"
+    k8s-version: "1.24"
     workload-type: "non-gpu"
     workers-size: 2
 
