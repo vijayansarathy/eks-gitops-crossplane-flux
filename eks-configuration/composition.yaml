@@ -635,7 +635,7 @@ spec:
         spec:
           forProvider:
             manifest:
-              apiVersion: aws.crossplane.io/v1beta1
+              apiVersion: kubernetes.crossplane.io/v1alpha1
               kind: ProviderConfig
               metadata:
                 name: providerconfig-tmp
