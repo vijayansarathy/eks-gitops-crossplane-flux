@@ -638,7 +638,7 @@ spec:
               apiVersion: aws.crossplane.io/v1beta1
               kind: ProviderConfig
               metadata:
-                name: providerconfig-workload-cluster-tmp
+                name: providerconfig-tmp
                 labels:
                   createdBy: crossplane
               spec:
@@ -659,7 +659,7 @@ spec:
           transforms:
             - type: string
               string:
-                fmt: "%s-providerconfig-workload-cluster"   
+                fmt: "%s-providerconfig"   
           #
           # Set the name of the K8s Secret referenced by the ProviderConfig resource for its credential
           #                 
@@ -708,4 +708,4 @@ spec:
           transforms:
             - type: string
               string:
-                fmt: "%s-providerconfig-workload-cluster"   
+                fmt: "%s-providerconfig"   
