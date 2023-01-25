@@ -480,10 +480,13 @@ spec:
         - type: PatchSet
           patchSetName: common-parameters      
         - fromFieldPath: "spec.parameters.k8s-version"
-          toFieldPath: "spec.forProvider.version"            
+          toFieldPath: "spec.forProvider.version"                    
+        - fromFieldPath: "spec.parameters.cluster-role"
+          toFieldPath: "spec.forProvider.roleArn"          
           #
-          # Deternmine the name the K8s Secret based on the metadata.uid field of the Cluster XR
-          # The metadata.uid field has a unique value for each Cluster MR 
+          # Crossplane creates a Kubernetes Secret which contains cluster configuration info
+          # Set the name of this Secret based on the metadata.uid field of the EKSCluster XR
+          # The metadata.uid field has a unique value for each EKSCluster MR 
           # Thus, it allows us to provision multiple EKS clusters and create the corresponding Secrets all in the same namespace.
           #
         - fromFieldPath: "metadata.uid"
@@ -491,9 +494,7 @@ spec:
           transforms:
             - type: string
               string:
-                fmt: "%s-ekscluster-connection"            
-        - fromFieldPath: "spec.parameters.cluster-role"
-          toFieldPath: "spec.forProvider.roleArn"          
+                fmt: "%s-ekscluster-configuration"              
           #
           # Retrieve the ARN, OIDC URL and the API server endpoint of the Cluster MR and propagate it back up to the status fields of the XR
           #       
@@ -509,7 +510,7 @@ spec:
       connectionDetails:
           #
           # Crossplane creates a Secret as specified in the 'writeConnectionSecretToRef' field 
-          # Map the fields of this Secret to fields of another Secret specified in the XR
+          # Map the fields of this Secret to fields of another Secret specified in the EKSCluster XR
           #
         - name: cluster-ca
           fromConnectionSecretKey: clusterCA
@@ -555,6 +556,8 @@ spec:
       base:
         apiVersion: iam.aws.crossplane.io/v1beta1
         kind: OpenIDConnectProvider
+        metadata:
+          name: oidc-idp-tmp        
         spec:
           forProvider:
             clientIDList:
@@ -566,6 +569,18 @@ spec:
           toFieldPath: spec.forProvider.url
           policy:
             fromFieldPath: Required
+          #
+          # Note that 'metadata.name' in 'fromFieldPath' refers to the name of the EKSCluster Composite Resource (XR)
+          #
+        - fromFieldPath: metadata.name
+          toFieldPath: metadata.name
+          transforms:
+            - type: string
+              string:
+                fmt: 'oidc-idp-%'
+
+
+
 
       #
       # The Crossplane Kubernetes Provider is designed to enable deployment and management of arbitrary Kubernetes resources in clusters. 
@@ -580,7 +595,9 @@ spec:
 
       #
       # Using the Crossplane Kubernetes Provider, create a ConfigMap in the management cluster with information about the workload cluster
-      # As the ConfigMap (external resource) is created in the management cluster, we use use the ProviderConfig that was created in the management cluster for the Crossplane Kubernetes Provider
+      # As the ConfigMap (external resource) is created in the management cluster, we use the ProviderConfig that was created in the management cluster for the Crossplane Kubernetes Provider
+      # This ProviderConfig is configured to use the credentials of the service account that the Crossplane Kubernetes Provider is running under.
+      # This service account in turn is associated with cluster-admin role in the management cluster, thus granting the Crossplane Kubernetes Provider permissions to do anything in the management cluster
       # This is dobe by explicitly specifying the 'spec.providerConfigRef' field
       # If the field is not set, Crossplane will use a ProviderConfig named 'default' which pertains to the Crossplane AWS Provider
       # 
@@ -589,7 +606,7 @@ spec:
         apiVersion: kubernetes.crossplane.io/v1alpha1
         kind: Object
         metadata:
-          name: cluster-info-configmap
+          name: configmap-cluster-info-tmp
         spec:
           forProvider:
             manifest:
@@ -611,14 +628,20 @@ spec:
         - type: PatchSet
           patchSetName: cluster-info-mappings         
           #
-          # Redefine the name of the ConfigMap using the UID of the Cluster XR
+          # Redefine the name of the Kubernetes Object and the ConfigMap it wraps using the name of the EKSCluster XR
           #
-        - fromFieldPath: "metadata.uid"
+        - fromFieldPath: "metadata.name"
+          toFieldPath: metadata.name
+          transforms:
+            - type: string
+              string:
+                fmt: "configmap-cluster-info-%s"            
+        - fromFieldPath: "metadata.name"
           toFieldPath: spec.forProvider.manifest.metadata.name
           transforms:
             - type: string
               string:
-                fmt: "%s-cluster-info"   
+                fmt: "cluster-info-%s"   
          
 
       #
@@ -631,7 +654,7 @@ spec:
         apiVersion: kubernetes.crossplane.io/v1alpha1
         kind: Object
         metadata:
-          name: providerconfig-workload-cluster
+          name: providerconfig-tmp
         spec:
           forProvider:
             manifest:
@@ -645,30 +668,36 @@ spec:
                 credentials:
                   source: Secret
                   secretRef:
-                    name: ekscluster-connection-tmp
+                    name: ekscluster-configuration-tmp
                     namespace: crossplane-system
                     key: kubeconfig
           providerConfigRef:
             name: k8s-providerconfig
       patches:
           #
-          # Redefine the name of the ProviderConfig using the UID of the Cluster XR
+          # Set the name of the Kubernetes Object and the ProviderConfig it wraps using the name of the EKSCluster XR
           #      
-        - fromFieldPath: "metadata.uid"
+        - fromFieldPath: "metadata.name"
+          toFieldPath: metadata.name
+          transforms:
+            - type: string
+              string:
+                fmt: "providerconfig-%s"                   
+        - fromFieldPath: "metadata.name"
           toFieldPath: spec.forProvider.manifest.metadata.name
           transforms:
             - type: string
               string:
-                fmt: "%s-providerconfig"   
+                fmt: "providerconfig-%s"   
           #
-          # Set the name of the K8s Secret referenced by the ProviderConfig resource for its credential
+          # Set the name of the Kubernetes Secret referenced by the ProviderConfig resource for its credentials
           #                 
         - fromFieldPath: "metadata.uid"
           toFieldPath: spec.forProvider.manifest.spec.credentials.secretRef.name
           transforms:
             - type: string
               string:
-                fmt: '%s-ekscluster-connection'
+                fmt: "%s-ekscluster-configuration"     
 
       #
       # Using the Crossplane Kubernetes Provider, create a ConfigMap in the workload cluster
@@ -680,6 +709,7 @@ spec:
         kind: Object
         metadata:
           name: cluster-info-remote-configmap
+          name: configmap-remote-cluster-info-tmp
         spec:
           forProvider:
             manifest:
@@ -703,9 +733,20 @@ spec:
           #
           # Set the name of the ProviderConfig using the UID of the Cluster XR
           #      
-        - fromFieldPath: "metadata.uid"
+        - fromFieldPath: "metadata.name"
           toFieldPath: spec.providerConfigRef.name
           transforms:
             - type: string
               string:
-                fmt: "%s-providerconfig"   
+                fmt: "providerconfig-%s"   
+          #
+          # Set the name of the Kubernetes Object using the name of the EKSCluster XR
+          # As the ConfigMap is created is created in the remote cluster, there is no need to disambiguatre its name
+          #
+        - fromFieldPath: "metadata.name"
+          toFieldPath: metadata.name
+          transforms:
+            - type: string
+              string:
+                fmt: "configmap-remote-cluster-info-%s"            
+                         

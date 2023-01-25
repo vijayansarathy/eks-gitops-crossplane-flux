@@ -13,5 +13,13 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
+  healthChecks:
+  - kind: Secret
+    apiVersion: v1
+    name: configuration-prod-eks-cluster
+    namespace: flux-system
+  - kind: OpenIDConnectProvider
+    apiVersion: iam.aws.crossplane.io/v1beta1
+    name: oidc-idp-prod-eks-cluster
   validation: client
 
