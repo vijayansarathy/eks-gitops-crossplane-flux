@@ -19,7 +19,7 @@ flux create secret git flux-remote-bootstrap \
 # In order for this to work, the public key from the above public-private key pair should have been added to that repo
 # Second, as we are using Flux to deploy Flux, the above Secret has to be sync'd to the workload cluster using GitOps workflow
 # This entails storing this Secret in Git which is not safe.
-# So, we have to seal this Secret using Sealed Secrets and convert it to a SealedSecret resource before storing it in Git.
+# So, we have to seal the Secret 'flux-remote-bootstrap' using Bitnami Sealed Secrets and convert it to a SealedSecret custom resource before storing it in Git.
 # The sealing keys themselves are stored in AWS Secrets Manahger
 # The Secret 'flux-remote-bootstrap' can be sealed using the 'kubeseal' CLI with the public key portion (certificate) of the sealing keys
 #
@@ -27,7 +27,7 @@ flux create secret git flux-remote-bootstrap \
 #
 # First generate the sealing keys which is just public-private key pair generated using OpenSSL
 # The sealing keys will have to stored in AWS Secrets Manager
-# They will be retrieved from Secrets Manager by External Secrets Controller and will be deployed as a Kubernetes Secret 
+# They will be retrieved from Secrets Manager by External Secrets Controller running on the workload cluster and will be deployed as a Kubernetes Secret 
 #
 export PRIVATE_KEY="sealed-secrets-sealing-key"
 export PUBLIC_KEY="sealed-secrets-sealing-crt"
