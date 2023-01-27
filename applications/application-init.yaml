@@ -13,5 +13,5 @@ spec:
     name: flux-system
   kubeConfig:
     secretRef:
-      name: crossplane-flux-cluster-connection
+      name: configuration-prod-eks-cluster
   validation: client
