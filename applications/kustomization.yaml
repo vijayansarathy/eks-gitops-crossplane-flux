@@ -5,3 +5,4 @@ resources:
   - application-external-secrets-controller.yaml
   - application-external-secrets.yaml
   - application-sealed-secrets-controller.yaml
+  - application-flux-toolkit.yaml
