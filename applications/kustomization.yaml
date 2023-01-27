@@ -4,3 +4,4 @@ resources:
   - application-init.yaml
   - application-external-secrets-controller.yaml
   - application-external-secrets.yaml
+  - application-sealed-secrets-controller.yaml
