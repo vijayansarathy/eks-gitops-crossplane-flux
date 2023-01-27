@@ -577,7 +577,7 @@ spec:
           transforms:
             - type: string
               string:
-                fmt: 'oidc-idp-%'
+                fmt: 'oidc-idp-%s'
 
 
 
