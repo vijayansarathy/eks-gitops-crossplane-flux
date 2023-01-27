@@ -8,5 +8,3 @@ resources:
   - crossplane-configuration-package.yaml
   - crossplane-composite-resources.yaml
   
-	
-
